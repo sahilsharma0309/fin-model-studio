@@ -1,16 +1,10 @@
-"""Central place for env-driven configuration and app paths."""
+"""App paths. No env configuration needed — this platform calls no APIs."""
 
-import os
 from pathlib import Path
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-
-# Uploaded files and generated charts live outside git (see .gitignore)
+# Generated charts and reports live outside git (see .gitignore)
 UPLOADS_DIR = PROJECT_ROOT / "uploads"
 CHARTS_DIR = PROJECT_ROOT / "exports" / "charts"
 REPORTS_DIR = PROJECT_ROOT / "exports" / "reports"
