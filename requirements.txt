@@ -1,0 +1,10 @@
+# FinModel Studio — pure-formula financial models, no LLM needed
+streamlit>=1.35
+pandas>=2.0
+numpy>=1.24
+plotly==5.24.1
+kaleido==0.2.1           # static PNG export of plotly figures for reports
+
+# Branded report export
+weasyprint>=62           # PDF (needs system pango libs; see packages.txt)
+python-docx>=1.1         # Word
