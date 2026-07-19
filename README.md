@@ -18,12 +18,12 @@ report. No AI calls — every model is pure, auditable math.
   defendable value range (football-field chart), the way fairness
   opinions are built.
 
-## Roadmap
+## All categories live
 
-Phase 2 — Corporate Finance/FP&A · Phase 3 — M&A + LBO/PE ·
-Phase 4 — Credit & Banking · Phase 5 — Markets & Portfolio ·
-Phase 6 — Real Estate + Economics. Every category ends with its own
-⭐ Mix model.
+💰 Valuation (7) · 📊 Corporate Finance (5) · 🤝 M&A (4) · 🏦 LBO/PE (3) ·
+💳 Credit & Banking (6) · 📈 Markets & Portfolio (6) · 🏢 Real Estate (5) ·
+🌍 Economics (4) — **40 models**, each category with its own ⭐ Mix model,
+everything in English and हिंदी.
 
 ## Setup
 

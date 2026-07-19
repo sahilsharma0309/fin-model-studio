@@ -11,7 +11,9 @@ import streamlit as st
 
 import models.corpfin  # noqa: F401 — registers corpfin models
 import models.credit  # noqa: F401 — registers credit models
+import models.econ  # noqa: F401 — registers economics models
 import models.markets  # noqa: F401 — registers markets models
+import models.realestate  # noqa: F401 — registers real estate models
 import models.lbo  # noqa: F401 — registers LBO models
 import models.ma  # noqa: F401 — registers M&A models
 import models.valuation  # noqa: F401 — registers valuation models
@@ -33,8 +35,8 @@ CATEGORIES = {
     "lbo": {"en": "🏦 LBO / Private Equity", "hi": "🏦 LBO / प्राइवेट इक्विटी"},
     "credit": {"en": "💳 Credit & Banking", "hi": "💳 क्रेडिट व बैंकिंग"},
     "markets": {"en": "📈 Markets & Portfolio", "hi": "📈 मार्केट्स व पोर्टफ़ोलियो"},
-    "realestate": {"en": "🏢 Real Estate (Phase 6)", "hi": "🏢 रियल एस्टेट (चरण 6)"},
-    "econ": {"en": "🌍 Economics (Phase 6)", "hi": "🌍 अर्थशास्त्र (चरण 6)"},
+    "realestate": {"en": "🏢 Real Estate", "hi": "🏢 रियल एस्टेट"},
+    "econ": {"en": "🌍 Economics", "hi": "🌍 अर्थशास्त्र"},
 }
 
 st.set_page_config(page_title="FinModel Studio", page_icon="🏛️", layout="wide")
