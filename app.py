@@ -9,7 +9,8 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-import models.valuation  # noqa: F401 — registers the valuation models
+import models.corpfin  # noqa: F401 — registers corpfin models
+import models.valuation  # noqa: F401 — registers valuation models
 from core.branding import ACCENT_COLOR, BRAND_NAME, MONOGRAM, PRIMARY_COLOR
 from core.i18n import LANGUAGES
 from core.report_docx import export_docx
@@ -23,7 +24,7 @@ except OSError:
 
 CATEGORIES = {
     "valuation": {"en": "💰 Valuation", "hi": "💰 मूल्यांकन"},
-    "corpfin": {"en": "📊 Corporate Finance (Phase 2)", "hi": "📊 कॉर्पोरेट फ़ाइनेंस (चरण 2)"},
+    "corpfin": {"en": "📊 Corporate Finance / FP&A", "hi": "📊 कॉर्पोरेट फ़ाइनेंस / FP&A"},
     "ma": {"en": "🤝 M&A (Phase 3)", "hi": "🤝 M&A (चरण 3)"},
     "lbo": {"en": "🏦 LBO / PE (Phase 3)", "hi": "🏦 LBO / PE (चरण 3)"},
     "credit": {"en": "💳 Credit & Banking (Phase 4)", "hi": "💳 क्रेडिट व बैंकिंग (चरण 4)"},
@@ -149,6 +150,8 @@ if output is not None:
         st.markdown(f"**{item.question}**")
         if item.figure is not None:
             st.plotly_chart(item.figure, use_container_width=True)
+        if item.kind == "dataframe" and item.dataframe is not None:
+            st.dataframe(item.dataframe, use_container_width=True, hide_index=True)
         if item.text:
             st.markdown(f"💡 {item.text}")
         if item.guide:
