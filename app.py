@@ -10,6 +10,8 @@ import pandas as pd
 import streamlit as st
 
 import models.corpfin  # noqa: F401 — registers corpfin models
+import models.lbo  # noqa: F401 — registers LBO models
+import models.ma  # noqa: F401 — registers M&A models
 import models.valuation  # noqa: F401 — registers valuation models
 from core.branding import ACCENT_COLOR, BRAND_NAME, MONOGRAM, PRIMARY_COLOR
 from core.i18n import LANGUAGES
@@ -25,8 +27,8 @@ except OSError:
 CATEGORIES = {
     "valuation": {"en": "💰 Valuation", "hi": "💰 मूल्यांकन"},
     "corpfin": {"en": "📊 Corporate Finance / FP&A", "hi": "📊 कॉर्पोरेट फ़ाइनेंस / FP&A"},
-    "ma": {"en": "🤝 M&A (Phase 3)", "hi": "🤝 M&A (चरण 3)"},
-    "lbo": {"en": "🏦 LBO / PE (Phase 3)", "hi": "🏦 LBO / PE (चरण 3)"},
+    "ma": {"en": "🤝 M&A", "hi": "🤝 M&A"},
+    "lbo": {"en": "🏦 LBO / Private Equity", "hi": "🏦 LBO / प्राइवेट इक्विटी"},
     "credit": {"en": "💳 Credit & Banking (Phase 4)", "hi": "💳 क्रेडिट व बैंकिंग (चरण 4)"},
     "markets": {"en": "📈 Markets & Portfolio (Phase 5)", "hi": "📈 मार्केट्स व पोर्टफ़ोलियो (चरण 5)"},
     "realestate": {"en": "🏢 Real Estate (Phase 6)", "hi": "🏢 रियल एस्टेट (चरण 6)"},
