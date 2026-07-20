@@ -6,12 +6,12 @@ Run with:  streamlit run app.py
 import re
 from datetime import date
 
-import pandas as pd
 import streamlit as st
 
 import models.corpfin  # noqa: F401 — registers corpfin models
 import models.credit  # noqa: F401 — registers credit models
 import models.econ  # noqa: F401 — registers economics models
+import models.expansion  # noqa: F401 — registers the expansion-pack models
 import models.markets  # noqa: F401 — registers markets models
 import models.realestate  # noqa: F401 — registers real estate models
 import models.lbo  # noqa: F401 — registers LBO models
@@ -20,7 +20,6 @@ import models.valuation  # noqa: F401 — registers valuation models
 from core.branding import ACCENT_COLOR, BRAND_NAME, MONOGRAM, PRIMARY_COLOR
 from core.i18n import LANGUAGES
 from core.report_docx import export_docx
-from core.result import Kpi
 from models.base import REGISTRY, table_default
 
 try:
@@ -41,34 +40,70 @@ CATEGORIES = {
 
 st.set_page_config(page_title="FinModel Studio", page_icon="🏛️", layout="wide")
 
+# ------------------------------------------------- SaaS look & feel
 st.markdown(
     f"""<style>
     #MainMenu, footer {{visibility: hidden;}}
+    .block-container {{ padding-top: 1.6rem; }}
+
+    /* animated entrances */
+    @keyframes fmsUp {{ from {{opacity:0; transform:translateY(10px);}} to {{opacity:1; transform:none;}} }}
+    @keyframes fmsFade {{ from {{opacity:0;}} to {{opacity:1;}} }}
+    .fms-hero, .fms-modelcard {{ animation: fmsUp .5s ease both; }}
+    div[data-testid="stMetric"], div[data-testid="stPlotlyChart"],
+    div[data-testid="stDataFrame"], div[data-testid="stAlert"] {{ animation: fmsUp .45s ease both; }}
+
+    /* KPI cards */
     div[data-testid="stMetric"] {{
-        background: #ffffff; border: 1px solid #e3e5e8;
-        border-top: 3px solid {ACCENT_COLOR};
-        padding: 14px 18px; border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(26,43,76,0.06);
+        background:#fff; border:1px solid #e7e9ee; border-top:3px solid {ACCENT_COLOR};
+        padding:14px 18px; border-radius:10px; box-shadow:0 1px 4px rgba(26,43,76,.07);
+        transition:transform .18s ease, box-shadow .18s ease;
     }}
-    div[data-testid="stMetric"] label {{ color: #6a707a; }}
+    div[data-testid="stMetric"]:hover {{ transform:translateY(-3px);
+        box-shadow:0 8px 22px rgba(26,43,76,.14); }}
+    div[data-testid="stMetric"] label {{ color:#6a707a; }}
+
+    /* buttons */
+    div[data-testid="stButton"] > button, div[data-testid="stDownloadButton"] > button,
+    div[data-testid="stFormSubmitButton"] > button {{
+        border-radius:9px; font-weight:600; transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }}
+    div[data-testid="stButton"] > button:hover, div[data-testid="stDownloadButton"] > button:hover,
+    div[data-testid="stFormSubmitButton"] > button:hover {{
+        transform:translateY(-2px); box-shadow:0 6px 16px rgba(26,43,76,.18); filter:saturate(1.05);
+    }}
+    section[data-testid="stSidebar"] {{ border-right:1px solid #e7e9ee; }}
     </style>""",
     unsafe_allow_html=True,
 )
 st.markdown(
-    f"""<div style="display:flex;align-items:center;gap:14px;padding:6px 0 14px 0;
-         border-bottom:3px solid {ACCENT_COLOR};margin-bottom:16px">
-      <div style="width:46px;height:46px;border-radius:50%;background:{PRIMARY_COLOR};
-           color:{ACCENT_COLOR};display:flex;align-items:center;justify-content:center;
-           font-weight:700;font-size:20px">{MONOGRAM}</div>
+    f"""<div class="fms-hero" style="display:flex;align-items:center;gap:16px;
+         padding:18px 22px;margin-bottom:18px;border-radius:14px;
+         background:linear-gradient(120deg,{PRIMARY_COLOR} 0%,#243a63 55%,#2c4676 100%);
+         box-shadow:0 10px 30px rgba(26,43,76,.28)">
+      <div style="width:52px;height:52px;border-radius:50%;background:{ACCENT_COLOR};
+           color:{PRIMARY_COLOR};display:flex;align-items:center;justify-content:center;
+           font-weight:800;font-size:22px;box-shadow:0 3px 10px rgba(0,0,0,.2)">{MONOGRAM}</div>
       <div>
-        <div style="font-size:25px;font-weight:700;color:{PRIMARY_COLOR};line-height:1.15">
-          FinModel Studio</div>
-        <div style="color:#6a707a;font-size:14px">{BRAND_NAME} · Valuation, M&A,
-          credit &amp; market models — pick, fill, analyze, export</div>
+        <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.15;
+             letter-spacing:.2px">FinModel Studio</div>
+        <div style="color:#dfe6f2;font-size:14px">{BRAND_NAME} · 50 financial models —
+          valuation, M&amp;A, LBO, credit, markets &amp; more. Pick, fill, analyze, export.</div>
       </div>
     </div>""",
     unsafe_allow_html=True,
 )
+
+
+def _reset(full: bool) -> None:
+    """Clear results (and, when full, every input) then rerun."""
+    if full:
+        st.session_state.clear()
+    else:
+        for k in ("output", "output_model", "report_files"):
+            st.session_state.pop(k, None)
+    st.rerun()
+
 
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
@@ -84,23 +119,37 @@ with st.sidebar:
         format_func=lambda k: CATEGORIES[k].get(lang, CATEGORIES[k]["en"]),
     )
     specs = REGISTRY.get(cat_key, [])
-    if not specs:
-        st.info("Coming in a later phase — Valuation is live now."
-                if lang != "hi" else "अगले चरण में आ रहा है — अभी Valuation चालू है।")
-        spec = None
-    else:
-        spec = st.selectbox(
-            "Model" if lang != "hi" else "मॉडल",
-            specs, format_func=lambda s: s.name.get(lang, s.name["en"]),
-        )
+    spec = st.selectbox(
+        "Model" if lang != "hi" else "मॉडल",
+        specs, format_func=lambda s: s.name.get(lang, s.name["en"]),
+    ) if specs else None
+
+    st.divider()
+    n_models = sum(len(v) for v in REGISTRY.values())
+    st.caption((f"🔄 Reset when you want a clean slate · {n_models} models across "
+                f"{len(CATEGORIES)} categories") if lang != "hi" else
+               (f"🔄 नई शुरुआत के लिए रीसेट · {len(CATEGORIES)} श्रेणियों में {n_models} मॉडल"))
+    if st.button("🔄 Start over (clear all)" if lang != "hi" else "🔄 नई शुरुआत (सब मिटाएँ)",
+                 use_container_width=True):
+        _reset(full=True)
 
 if spec is None:
+    st.info("This category is being added." if lang != "hi" else "यह श्रेणी जोड़ी जा रही है।")
     st.stop()
 
-# ---------------------------------------------------------------- form
-st.subheader(spec.name.get(lang, spec.name["en"]))
-st.caption(spec.desc.get(lang, spec.desc["en"]))
+# ---------------------------------------------------------------- model header
+st.markdown(
+    f"""<div class="fms-modelcard" style="border:1px solid #e7e9ee;border-left:4px solid
+         {ACCENT_COLOR};border-radius:10px;padding:14px 18px;margin-bottom:12px;background:#fff">
+      <div style="font-size:19px;font-weight:700;color:{PRIMARY_COLOR}">
+        {spec.name.get(lang, spec.name['en'])}</div>
+      <div style="color:#6a707a;font-size:14px;margin-top:2px">
+        {spec.desc.get(lang, spec.desc['en'])}</div>
+    </div>""",
+    unsafe_allow_html=True,
+)
 
+# ---------------------------------------------------------------- form
 values: dict = {}
 with st.form(key=f"form_{spec.key}"):
     columns = st.columns(2)
@@ -120,8 +169,7 @@ with st.form(key=f"form_{spec.key}"):
             back = {v: k for k, v in renamed.items()}
             values[field.key] = edited.rename(columns=back)
         elif field.kind == "bool":
-            values[field.key] = st.checkbox(label, value=bool(field.default),
-                                            help=help_text)
+            values[field.key] = st.checkbox(label, value=bool(field.default), help=help_text)
         else:
             with columns[slot % 2]:
                 if field.kind == "int":
@@ -130,9 +178,7 @@ with st.form(key=f"form_{spec.key}"):
                 else:
                     values[field.key] = st.number_input(
                         label, value=float(field.default),
-                        min_value=field.min_value, help=help_text,
-                        format="%.2f",
-                    )
+                        min_value=field.min_value, help=help_text, format="%.2f")
             slot += 1
     submitted = st.form_submit_button(
         "🔎 Analyze" if lang != "hi" else "🔎 विश्लेषण करें", type="primary")
@@ -146,6 +192,12 @@ if submitted:
 # ---------------------------------------------------------------- results
 output = st.session_state.get("output")
 if output is not None:
+    head_l, head_r = st.columns([4, 1])
+    with head_r:
+        if st.button("↩️ Clear result" if lang != "hi" else "↩️ नतीजा हटाएँ",
+                     use_container_width=True):
+            _reset(full=False)
+
     if output.verdict:
         (st.warning if output.verdict.startswith("⚠️") else st.success)(output.verdict)
     if output.kpis:
