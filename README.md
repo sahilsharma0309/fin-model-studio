@@ -20,10 +20,11 @@ report. No AI calls — every model is pure, auditable math.
 
 ## All categories live
 
-💰 Valuation (7) · 📊 Corporate Finance (5) · 🤝 M&A (4) · 🏦 LBO/PE (3) ·
-💳 Credit & Banking (6) · 📈 Markets & Portfolio (6) · 🏢 Real Estate (5) ·
-🌍 Economics (4) — **40 models**, each category with its own ⭐ Mix model,
-everything in English and हिंदी.
+💰 Valuation (9) · 📊 Corporate Finance (7) · 🤝 M&A (5) · 🏦 LBO/PE (4) ·
+💳 Credit & Banking (8) · 📈 Markets & Portfolio (7) · 🏢 Real Estate (5) ·
+🌍 Economics (5) — **50 models**, each category with its own ⭐ Mix model,
+everything in English and हिंदी. Polished SaaS UI with animated cards and
+a reset / start-over control.
 
 ## Setup
 
